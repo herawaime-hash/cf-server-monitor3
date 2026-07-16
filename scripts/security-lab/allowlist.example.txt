@@ -1,0 +1,4 @@
+# One authorized target per line
+# exact hostname or URL prefix that is in-scope
+https://example.com
+api.example.com
