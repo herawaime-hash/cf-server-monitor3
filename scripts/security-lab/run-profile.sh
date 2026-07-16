@@ -4,6 +4,7 @@ set -euo pipefail
 PROFILE="${1:-}"
 TARGET="${2:-}"
 LAB_ROOT="${3:-/opt/security-lab}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [[ -z "$PROFILE" || -z "$TARGET" ]]; then
   echo "Usage: $0 <web|api|recon> <target> [lab-root]" >&2
@@ -34,14 +35,33 @@ if [[ ! -f "$ALLOWLIST_FILE" ]]; then
   exit 1
 fi
 
-if ! grep -vE '^\s*#|^\s*$' "$ALLOWLIST_FILE" | grep -Fxq "$TARGET"; then
+is_allowlisted() {
+  while IFS= read -r raw; do
+    entry="$(echo "$raw" | sed 's/[[:space:]]*$//')"
+    [[ -z "$entry" || "$entry" =~ ^[[:space:]]*# ]] && continue
+
+    if [[ "$TARGET" == "$entry" ]]; then
+      return 0
+    fi
+
+    # URL prefix matching for scoped paths/domains.
+    if [[ "$entry" == http://* || "$entry" == https://* ]]; then
+      case "$TARGET" in
+        "$entry"/*) return 0 ;;
+      esac
+    fi
+  done < "$ALLOWLIST_FILE"
+  return 1
+}
+
+if ! is_allowlisted; then
   echo "Blocked: target not allowlisted: $TARGET" >&2
   exit 1
 fi
 
 RATE_LIMIT="${DEFAULT_RATE_LIMIT:-50}"
 CONCURRENCY="${DEFAULT_CONCURRENCY:-10}"
-COMPOSE_FILE="/home/runner/work/cf-server-monitor3/cf-server-monitor3/scripts/security-lab/docker-compose.yml"
+COMPOSE_FILE="${COMPOSE_FILE:-$SCRIPT_DIR/docker-compose.yml}"
 
 log_audit() {
   printf '{"timestamp":"%s","profile":"%s","target":"%s","rate_limit":%s,"concurrency":%s}\n' \
@@ -50,7 +70,7 @@ log_audit() {
 
 run_web() {
   docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" run --rm nuclei \
-    -u "$TARGET" -rl "$RATE_LIMIT" -jsonl -o "/reports/web-$TS.jsonl"
+    sh -lc "mkdir -p /reports && nuclei -u \"$TARGET\" -rl \"$RATE_LIMIT\" -jsonl -o \"/reports/web-$TS.jsonl\""
 }
 
 run_api() {
@@ -60,15 +80,21 @@ run_api() {
   fi
 
   docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" run --rm newman \
-    run /workspace/api-collection.json --reporters cli,json \
-    --reporter-json-export "/reports/api-$TS.json"
+    sh -lc "mkdir -p /reports && newman run /workspace/api-collection.json --reporters cli,json --reporter-json-export \"/reports/api-$TS.json\""
 }
 
 run_recon() {
+  local candidates="$LAB_ROOT/reports/recon-candidates-$TS.txt"
   docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" run --rm subfinder \
-    -d "$TARGET" -silent | \
-    docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" run --rm -T httpx \
-      -silent -threads "$CONCURRENCY" -json -o "/reports/recon-$TS.jsonl"
+    -d "$TARGET" -silent > "$candidates"
+
+  if [[ ! -s "$candidates" ]]; then
+    echo "No recon candidates discovered for target: $TARGET" >&2
+    exit 1
+  fi
+
+  docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" run --rm -T httpx \
+    sh -lc "mkdir -p /reports && httpx -silent -threads \"$CONCURRENCY\" -json -o \"/reports/recon-$TS.jsonl\"" < "$candidates"
 }
 
 log_audit

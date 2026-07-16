@@ -36,25 +36,28 @@ This guide implements an iPad-first workflow where the iPad is the control plane
 ## 2) Quick start
 
 ```bash
-cd /home/runner/work/cf-server-monitor3/cf-server-monitor3
+REPO_ROOT=/path/to/repository
+cd "$REPO_ROOT"
 chmod +x scripts/security-lab/bootstrap.sh scripts/security-lab/run-profile.sh
 scripts/security-lab/bootstrap.sh /opt/security-lab
 cd /opt/security-lab
-cp /home/runner/work/cf-server-monitor3/cf-server-monitor3/scripts/security-lab/.env.example .env
-cp /home/runner/work/cf-server-monitor3/cf-server-monitor3/scripts/security-lab/allowlist.example.txt allowlist.txt
+cp "$REPO_ROOT/scripts/security-lab/.env.example" .env
+cp "$REPO_ROOT/scripts/security-lab/allowlist.example.txt" allowlist.txt
 ```
 
 Edit `.env` and `allowlist.txt`, then start services:
 
 ```bash
-docker compose -f /home/runner/work/cf-server-monitor3/cf-server-monitor3/scripts/security-lab/docker-compose.yml --env-file .env up -d
+docker compose -f "$REPO_ROOT/scripts/security-lab/docker-compose.yml" --env-file .env up -d
 ```
+
+> `allowlist.txt` supports exact target matches and URL-prefix scope rules.
 
 Run a guarded profile:
 
 ```bash
 LEGAL_ACKNOWLEDGEMENT=I_HAVE_AUTHORIZATION \
-/home/runner/work/cf-server-monitor3/cf-server-monitor3/scripts/security-lab/run-profile.sh web https://example.com /opt/security-lab
+"$REPO_ROOT/scripts/security-lab/run-profile.sh" web https://example.com /opt/security-lab
 ```
 
 ## 3) iPad workflow
