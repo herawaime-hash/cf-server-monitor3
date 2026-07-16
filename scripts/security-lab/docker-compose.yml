@@ -1,0 +1,93 @@
+services:
+  zap:
+    image: ${ZAP_IMAGE:?Set ZAP_IMAGE in .env with a pinned tag}
+    container_name: lab-zap
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+    networks: [lab]
+    volumes:
+      - lab_reports:/reports
+      - lab_evidence:/evidence
+
+  nuclei:
+    image: ${NUCLEI_IMAGE:?Set NUCLEI_IMAGE in .env with a pinned tag}
+    container_name: lab-nuclei
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+    networks: [lab]
+    volumes:
+      - lab_reports:/reports
+
+  httpx:
+    image: ${HTTPX_IMAGE:?Set HTTPX_IMAGE in .env with a pinned tag}
+    container_name: lab-httpx
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+    networks: [lab]
+    volumes:
+      - lab_reports:/reports
+
+  ffuf:
+    image: ${FFUF_IMAGE:?Set FFUF_IMAGE in .env with a pinned tag}
+    container_name: lab-ffuf
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+    networks: [lab]
+    volumes:
+      - lab_reports:/reports
+
+  subfinder:
+    image: ${SUBFINDER_IMAGE:?Set SUBFINDER_IMAGE in .env with a pinned tag}
+    container_name: lab-subfinder
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+    networks: [lab]
+    volumes:
+      - lab_reports:/reports
+
+  amass:
+    image: ${AMASS_IMAGE:?Set AMASS_IMAGE in .env with a pinned tag}
+    container_name: lab-amass
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+    networks: [lab]
+    volumes:
+      - lab_reports:/reports
+
+  newman:
+    image: ${NEWMAN_IMAGE:?Set NEWMAN_IMAGE in .env with a pinned tag}
+    container_name: lab-newman
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+    networks: [lab]
+    volumes:
+      - lab_reports:/reports
+      - lab_workspace:/workspace
+
+  k6:
+    image: ${K6_IMAGE:?Set K6_IMAGE in .env with a pinned tag}
+    container_name: lab-k6
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+    networks: [lab]
+    volumes:
+      - lab_reports:/reports
+      - lab_workspace:/workspace
+
+  nmap:
+    image: ${NMAP_IMAGE:?Set NMAP_IMAGE in .env with a pinned tag}
+    container_name: lab-nmap
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+    networks: [lab]
+    volumes:
+      - lab_reports:/reports
+
+networks:
+  lab:
+    name: security-lab-network
+
+volumes:
+  lab_reports:
+  lab_evidence:
+  lab_workspace:

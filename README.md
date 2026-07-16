@@ -463,6 +463,10 @@ Windows 系统（Python 版）
 
 如需开发自定义主题，请参考 [主题开发文档](theme-develop.md)。
 
+### 安全实验室（iPad + VPS）
+
+如需搭建仅限授权目标使用的移动端安全测试工作流，请参考 [SECURITY_LAB_IPAD_VPS.md](SECURITY_LAB_IPAD_VPS.md)。
+
 ### 拖拽排序
 
 在管理后台的服务器列表中，可以通过拖拽调整服务器的显示顺序
@@ -587,7 +591,8 @@ CF-Server-Monitor/
 │       ├── App.vue             # 根组件
 │       └── main.js             # 前端入口
 ├── scripts/
-│   └── build.js                # 前端构建脚本
+│   ├── build.js                # 前端构建脚本
+│   └── security-lab/           # iPad + VPS 安全实验室脚手架（仅授权测试）
 ├── test/
 │   ├── README.md               # 测试工具说明
 │   └── generate-sql.js         # 测试数据生成工具
@@ -599,6 +604,7 @@ CF-Server-Monitor/
 ├── wrangler.toml               # 本地测试 wrangler 配置
 ├── API.md                      # 后端 API 文档
 ├── theme-develop.md            # 前端主题开发文档
+├── SECURITY_LAB_IPAD_VPS.md    # iPad + VPS 安全实验室部署说明
 ├── todo.md                     # 待办事项列表
 └── .github/
     └── workflows/
@@ -791,4 +797,3 @@ MIT License
 - [Chart.js](https://www.chartjs.org/)
 - [Leaflet](https://leafletjs.com/)
 - 感谢 [LINUX DO](https://linux.do/) [NodeSeek](https://www.nodeseek.com/post-763025-1) 社区的支持与推广
-
